@@ -1,8 +1,8 @@
 # Build site using Node JS
 FROM node:23-slim
 
-# Install nginx and wget
-RUN apt-get update && apt-get install -y nginx wget
+# Install wget
+RUN apt-get update && apt-get install -y wget
 
 ARG BUILD_DATE
 
@@ -21,9 +21,6 @@ RUN npm i
 
 COPY . .
 
-# Copy the nginx config to the correct folder
-COPY default.conf /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/nginx.conf
 
 ENV NODE_ENV=production
 
@@ -47,7 +44,9 @@ EXPOSE 4173
 # Add signal handling for faster shutdown
 STOPSIGNAL SIGTERM
 
+RUN npm install -g serve
+
 RUN chmod +x /app/docker-entrypoint.sh
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "-s", "/app/public", "-l", "4173"]

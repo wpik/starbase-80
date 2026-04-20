@@ -1,21 +1,5 @@
 #!/bin/sh
 
-# PID tracking for proper signal handling
-nginx_pid=""
-
-# Signal handler for fast shutdown
-cleanup() {
-    echo "Received shutdown signal, stopping nginx..."
-    if [ -n "$nginx_pid" ]; then
-        kill -QUIT "$nginx_pid" 2>/dev/null
-        wait "$nginx_pid" 2>/dev/null
-    fi
-    exit 0
-}
-
-# Set up signal traps
-trap cleanup TERM INT QUIT
-
 # Escape slashes
 LOGO=$(echo "${LOGO}" | sed 's/\//\\\//g')
 
@@ -51,10 +35,6 @@ if [ "$HOVER" = "underline" ]; then sed -i -e 's/@apply no-underline;/@apply und
 echo "Building application..."
 npm run build
 
-# Start nginx and track its PID
-echo "Starting nginx..."
-"$@" &
-nginx_pid=$!
-
-# Wait for nginx to finish, but respond to signals
-wait "$nginx_pid"
+# Start the Vite preview server (exec replaces the shell so signals go directly to npm)
+echo "Starting Vite preview server..."
+exec "$@"
