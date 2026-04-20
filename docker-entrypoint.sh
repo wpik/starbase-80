@@ -35,6 +35,11 @@ if [ "$HOVER" = "underline" ]; then sed -i -e 's/@apply no-underline;/@apply und
 echo "Building application..."
 npm run build
 
-# Start the Vite preview server (exec replaces the shell so signals go directly to npm)
-echo "Starting Vite preview server..."
-exec "$@"
+# Start the appropriate server based on SERVER_MODE
+if [ "$SERVER_MODE" = "node" ]; then
+    echo "Starting Node static file server..."
+    exec serve -s /app/public -l 4173
+else
+    echo "Starting nginx..."
+    exec nginx -g "daemon off;"
+fi
